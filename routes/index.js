@@ -8,7 +8,6 @@ const MAX_RUN_TIME = 15
 
 let priceCachePerPending = {}
 let assetIdsPerPlayer = {}
-let intervals = {}
 let runTimePerPlayer = {}
 
 let interval = null
@@ -17,29 +16,28 @@ let isProcessing = false
 async function handlePending(playerName, assetId) {
     console.log(priceCachePerPending[playerName])
 
-        runTimePerPlayer[playerName] += 1
+    runTimePerPlayer[playerName] += 1
 
-        if (runTimePerPlayer[playerName] == MAX_RUN_TIME) {
-            delete intervals[playerName]
-            delete priceCachePerPending[playerName]
-            delete runTime[playerName]
+    if (runTimePerPlayer[playerName] == MAX_RUN_TIME) {
+        delete priceCachePerPending[playerName]
+        delete runTimePerPlayer[playerName]
 
-            return
-        }
+        return
+    }
 
-        const URL = `${API_BASE_URL}v2/assets/${assetId}/details`
+    const URL = `${API_BASE_URL}v2/assets/${assetId}/details`
 
-        const apiRes = await needle('get', URL)
-        const data = apiRes.body
-        const priceInRobux = data.PriceInRobux
+    const apiRes = await needle('get', URL)
+    const data = apiRes.body
+    const priceInRobux = data.PriceInRobux
 
-        console.log(`priceInRobux:  ${priceInRobux}`)
+    console.log(`priceInRobux:  ${priceInRobux}`)
 
-        if (priceCachePerPending[playerName]) {
-            priceCachePerPending[playerName].push(priceInRobux)
-        } else {
-            console.log('startPending:  price cache for player has been deleted.')
-        }
+    if (priceCachePerPending[playerName]) {
+        priceCachePerPending[playerName].push(priceInRobux)
+    } else {
+        console.log('startPending:  price cache for player has been deleted.')
+    }
 }
 
 function startPending() {
@@ -84,11 +82,7 @@ router.get('/', (req, res, next) => {
 
         if (!priceCachePerPending[playerName]) {
             priceCachePerPending[playerName] = []
-
             assetIdsPerPlayer[playerName] = assetId
-        }
-
-        if (!runTimePerPlayer[playerName]) {
             runTimePerPlayer[playerName] = 0
         }
 
