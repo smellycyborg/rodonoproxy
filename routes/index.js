@@ -12,7 +12,7 @@ async function startPending(playerName, assetId) {
         priceCachePerPending[playerName] = []
     }
 
-    const URL = `${API_BASE_URL}${assetId}/details`
+    const URL = `${API_BASE_URL}v2/assets/${assetId}/details`
 
     const apiRes = await needle('get', URL)
     const data = apiRes.body
