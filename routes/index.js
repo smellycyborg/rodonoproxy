@@ -7,51 +7,60 @@ const apicache = require('apicache')
 const MAX_RUN_TIME = 15
 
 let priceCachePerPending = {}
+let assetIdsPerPlayer = {}
 let intervals = {}
-let runTime = {}
+let runTimePerPlayer = {}
 
-async function startPending(playerName, assetId) {
-    if (!priceCachePerPending[playerName]) {
-        priceCachePerPending[playerName] = []
-    }
+let interval = null
+let isProcessing = false
 
-    const URL = `${API_BASE_URL}v2/assets/${assetId}/details`
+async function handlePending(playerName, assetId) {
+    console.log(priceCachePerPending[playerName])
 
-    const apiRes = await needle('get', URL)
-    const data = apiRes.body
-    const priceInRobux = data.PriceInRobux
+        runTimePerPlayer[playerName] += 1
 
-    console.log(`priceInRobux:  ${priceInRobux}`)
+        if (runTime[playerName] == MAX_RUN_TIME) {
+            delete intervals[playerName]
+            delete priceCachePerPending[playerName]
+            delete runTime[playerName]
 
-    if (priceCachePerPending[playerName]) {
-        priceCachePerPending[playerName].push(priceInRobux)
-    } else {
-        console.log('startPending:  price cache for player has been deleted.')
-    }
+            return
+        }
 
-    runTime[playerName] += 1
+        const URL = `${API_BASE_URL}v2/assets/${assetIdsPerPlayer[playerName]}/details`
 
-    if (runTime[playerName] == MAX_RUN_TIME) {
-        clearInterval(intervals[playerName])
-        delete intervals[playerName]
-        delete priceCachePerPending[playerName]
-        delete runTime[playerName]
-    }
+        const apiRes = await needle('get', URL)
+        const data = apiRes.body
+        const priceInRobux = data.PriceInRobux
+
+        console.log(`priceInRobux:  ${priceInRobux}`)
+
+        if (priceCachePerPending[playerName]) {
+            priceCachePerPending[playerName].push(priceInRobux)
+        } else {
+            console.log('startPending:  price cache for player has been deleted.')
+        }
 }
 
-function stopPending(playerName) {
-    if (priceCachePerPending[playerName]) {
-        clearInterval(intervals[playerName])
-        delete intervals[playerName]
-        delete runTime[playerName]
+function startPending() {
 
-        let cacheCopy = priceCachePerPending[playerName].slice()
-        delete priceCachePerPending[playerName]
+    if (Object.keys(priceCachePerPending).length <= 0) {
+        clearInterval(interval)
 
-        return cacheCopy
+        return
     }
 
-    return null
+    if (isProcessing) {
+        return
+    }
+
+    isProcessing = true
+
+    for (const playerName of priceCachePerPending) {
+        handlePending(playerName, assetIdsPerPlayer[playerName])
+    }
+
+    isProcessing = false
 }
 
 const API_BASE_URL = process.env.API_BASE_URL
@@ -67,19 +76,28 @@ router.get('/', (req, res, next) => {
 
     if (isPending == 'true') {
 
-        if (!runTime[playerName]) {
-            runTime[playerName] = 0
+        if (!interval) {
+            interval = setInterval(startPending, 1000)
         }
 
-        if (!intervals[playerName]) {
-            intervals[playerName] = setInterval(startPending, 1000, playerName, assetId)
-        } else {
-            console.log('player cannot double purchase.')
+        if (!priceCachePerPending[playerName]) {
+            priceCachePerPending[playerName] = []
+
+            assetIdsPerPlayer[playerName] = assetId
+        }
+
+        if (!runTimePerPlayer[playerName]) {
+            runTimePerPlayer[playerName] = 0
         }
 
         res.status(200).json({ message: 'have started cache collection for pending' })
     } else if (isPending == 'false') {
-        let cacheCopy = stopPending(playerName)
+
+        delete runTimePerPlayer[playerName]
+        delete assetIdsPerPlayer[playerName]
+
+        let cacheCopy = priceCachePerPending[playerName].slice()
+        delete priceCachePerPending[playerName]
 
         if (cacheCopy != null) {
             res.status(200).json({ cacheCopy: cacheCopy, playerName: playerName })
