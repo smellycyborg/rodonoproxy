@@ -19,7 +19,7 @@ async function handlePending(playerName, assetId) {
 
         runTimePerPlayer[playerName] += 1
 
-        if (runTime[playerName] == MAX_RUN_TIME) {
+        if (runTimePerPlayer[playerName] == MAX_RUN_TIME) {
             delete intervals[playerName]
             delete priceCachePerPending[playerName]
             delete runTime[playerName]
