@@ -27,7 +27,7 @@ async function handlePending(playerName, assetId) {
             return
         }
 
-        const URL = `${API_BASE_URL}v2/assets/${assetIdsPerPlayer[playerName]}/details`
+        const URL = `${API_BASE_URL}v2/assets/${assetId}/details`
 
         const apiRes = await needle('get', URL)
         const data = apiRes.body
@@ -46,6 +46,7 @@ function startPending() {
 
     if (Object.keys(priceCachePerPending).length <= 0) {
         clearInterval(interval)
+        interval = null
 
         return
     }
@@ -56,7 +57,8 @@ function startPending() {
 
     isProcessing = true
 
-    for (const playerName of priceCachePerPending) {
+    let playerKeys = Object.keys(priceCachePerPending)
+    for (const playerName of playerKeys) {
         handlePending(playerName, assetIdsPerPlayer[playerName])
     }
 
