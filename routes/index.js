@@ -4,6 +4,8 @@ const router = express.Router()
 const needle = require('needle')
 const apicache = require('apicache')
 
+const MAX_RUN_TIME = 15
+
 let priceCachePerPending = {}
 let intervals = {}
 
@@ -24,6 +26,15 @@ async function startPending(playerName, assetId) {
         priceCachePerPending[playerName].push(priceInRobux)
     } else {
         console.log('startPending:  price cache for player has been deleted.')
+    }
+
+    runTime[playerName] += 1
+
+    if (runTime[playerName] == MAX_RUN_TIME) {
+        clearInterval(intervals[playerName])
+        delete intervals[playerName]
+        delete priceCachePerPending[playerName]
+        delete runTime[playerName]
     }
 }
 
@@ -53,6 +64,10 @@ router.get('/', (req, res, next) => {
     const isPending = query.isPending;
 
     if (isPending == 'true') {
+
+        if (!runTime[playerName]) {
+            runTime[playerName] = 0
+        }
 
         if (!intervals[playerName]) {
             intervals[playerName] = setInterval(startPending, 1000, playerName, assetId)
