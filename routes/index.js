@@ -8,6 +8,7 @@ const MAX_RUN_TIME = 15
 
 let priceCachePerPending = {}
 let intervals = {}
+let runTime = {}
 
 async function startPending(playerName, assetId) {
     if (!priceCachePerPending[playerName]) {
@@ -42,6 +43,7 @@ function stopPending(playerName) {
     if (priceCachePerPending[playerName]) {
         clearInterval(intervals[playerName])
         delete intervals[playerName]
+        delete runTime[playerName]
 
         let cacheCopy = priceCachePerPending[playerName].slice()
         delete priceCachePerPending[playerName]
