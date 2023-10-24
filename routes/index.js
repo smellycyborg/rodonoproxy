@@ -41,14 +41,6 @@ async function handlePending(playerName, assetId) {
 }
 
 function startPending() {
-
-    if (Object.keys(priceCachePerPending).length <= 0) {
-        clearInterval(interval)
-        interval = null
-
-        return
-    }
-
     if (isProcessing) {
         return
     }
@@ -77,7 +69,14 @@ router.get('/', (req, res, next) => {
     if (isPending == 'true') {
 
         if (!interval) {
-            interval = setInterval(startPending, 1000)
+            interval = setInterval(() => {
+                if (Object.keys(priceCachePerPending).length <= 0) {
+                  clearInterval(interval)
+                  interval = null
+                } else {
+                  startPending()
+                }
+              }, 1000)
         }
 
         if (!priceCachePerPending[playerName]) {
