@@ -14,8 +14,6 @@ let interval = null
 let isProcessing = false
 
 async function handlePending(playerName, assetId) {
-    console.log(priceCachePerPending[playerName])
-
     runTimePerPlayer[playerName] += 1
 
     if (runTimePerPlayer[playerName] == MAX_RUN_TIME) {
@@ -31,12 +29,8 @@ async function handlePending(playerName, assetId) {
     const data = apiRes.body
     const priceInRobux = data.PriceInRobux
 
-    console.log(`priceInRobux:  ${priceInRobux}`)
-
     if (priceCachePerPending[playerName]) {
         priceCachePerPending[playerName].push(priceInRobux)
-    } else {
-        console.log('startPending:  price cache for player has been deleted.')
     }
 }
 
@@ -102,8 +96,6 @@ router.get('/', (req, res, next) => {
     }
 
   } catch (error) {
-    console.log(error)
-
     next(error)
   }
 })
