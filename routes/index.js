@@ -14,23 +14,27 @@ let interval = null
 let isProcessing = false
 
 async function handlePending(playerName, assetId) {
-    runTimePerPlayer[playerName] += 1
+    runTimePerPlayer[playerName] += 1;
 
     if (runTimePerPlayer[playerName] == MAX_RUN_TIME) {
-        delete priceCachePerPending[playerName]
-        delete runTimePerPlayer[playerName]
+        delete priceCachePerPending[playerName];
+        delete runTimePerPlayer[playerName];
 
-        return
+        return;
     }
 
-    const URL = `${API_BASE_URL}v2/assets/${assetId}/details`
+    try {
+        const URL = `${API_BASE_URL}v2/assets/${assetId}/details`;
 
-    const apiRes = await needle('get', URL)
-    const data = apiRes.body
-    const priceInRobux = data.PriceInRobux
+        const apiRes = await needle('get', URL);
+        const data = apiRes.body;
+        const priceInRobux = data.PriceInRobux;
 
-    if (priceCachePerPending[playerName]) {
-        priceCachePerPending[playerName].push(priceInRobux)
+        if (priceCachePerPending[playerName]) {
+            priceCachePerPending[playerName].push(priceInRobux);
+        }
+    } catch (err) {
+        console.error(`Error fetching data for player ${playerName} and asset ${assetId}:`, err);
     }
 }
 
@@ -43,7 +47,11 @@ function startPending() {
 
     let playerKeys = Object.keys(priceCachePerPending)
     for (const playerName of playerKeys) {
-        handlePending(playerName, assetIdsPerPlayer[playerName])
+        try {
+            await handlePending(playerName, assetIdsPerPlayer[playerName]);
+        } catch (err) {
+            console.error(`Error in handlePending for player ${playerName}:`, err);
+        }
     }
 
     isProcessing = false
