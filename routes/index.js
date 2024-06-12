@@ -30,7 +30,12 @@ async function handlePending(playerName, assetId) {
 
         const apiRes = await needle('get', URL);
         const data = apiRes.body;
+
+        console.log(data)
+        
         const priceInRobux = data.PriceInRobux;
+
+        console.log(priceInRobux)
 
         if (priceCachePerPending[playerName]) {
             priceCachePerPending[playerName].push(priceInRobux);
