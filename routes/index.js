@@ -101,6 +101,9 @@ router.get('/', (req, res, next) => {
         delete assetIdsPerPlayer[playerName]
 
         let cacheCopy = priceCachePerPending[playerName].slice()
+
+        console.log(priceCachePerPending)
+        
         delete priceCachePerPending[playerName]
 
         if (cacheCopy != null) {
