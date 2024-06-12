@@ -48,7 +48,7 @@ function startPending() {
     let playerKeys = Object.keys(priceCachePerPending)
     for (const playerName of playerKeys) {
         try {
-            await handlePending(playerName, assetIdsPerPlayer[playerName]);
+            handlePending(playerName, assetIdsPerPlayer[playerName]);
         } catch (err) {
             console.error(`Error in handlePending for player ${playerName}:`, err);
         }
