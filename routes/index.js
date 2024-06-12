@@ -26,6 +26,8 @@ async function handlePending(playerName, assetId) {
     try {
         const URL = `${API_BASE_URL}v2/assets/${assetId}/details`;
 
+        console.log(URL)
+
         const apiRes = await needle('get', URL);
         const data = apiRes.body;
         const priceInRobux = data.PriceInRobux;
